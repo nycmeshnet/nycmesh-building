@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lookup</title>
+</head>
+<body>
+    <h1>Lookup</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.query }}
+        <button type="submit">Search</button>
+    </form>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    {% if results and not selected_member_info %}
+        <h2>Select a Member</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.selected_member }}
+            <button type="submit">Select</button>
+        </form>
+    {% endif %}
+
+    {% if selected_member_info %}
+        <h2>Selected Member Details</h2>
+        <p>Install Number: #{{ selected_member_info.installs.0 }}</p>
+        <p>Name: {{ selected_member_info.name }}</p>
+        <p>Number: {{ selected_member_info.phone_number }}</p>
+        <p>Email: {{ selected_member_info.primary_email_address }}</p>
+        <p>Unit: {{ selected_member_info.unit }}</p>
+    {% endif %}
+
+    {% if device_info %}
+        <h2>Device Information</h2>
+        <p><strong>Name:</strong> {{ device_info.name }}</p>
+        <p><strong>Status:</strong> {{ device_info.status }}</p>
+        <p><strong>Signal:</strong> {{ device_info.signal }}</p>
+        <p><strong>Last Seen:</strong> {{ device_info.lastSeen }}</p>
+        <p><strong>Model:</strong> {{ device_info.model }}</p>
+        <p><strong>SSID 1:</strong> {{ device_info.ssid1 }}</p>
+        <p><strong>SSID 2:</strong> {{ device_info.ssid2 }}</p>
+        <p><strong>Password:</strong> {{ device_info.password }}</p>
+    {% endif %}
+</body>
+</html>
