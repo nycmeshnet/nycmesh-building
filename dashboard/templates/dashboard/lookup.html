@@ -40,9 +40,20 @@
         <p><strong>Signal:</strong> {{ device_info.signal }}</p>
         <p><strong>Last Seen:</strong> {{ device_info.lastSeen }}</p>
         <p><strong>Model:</strong> {{ device_info.model }}</p>
-        <p><strong>SSID 1:</strong> {{ device_info.ssid1 }}</p>
-        <p><strong>SSID 2:</strong> {{ device_info.ssid2 }}</p>
-        <p><strong>Password:</strong> {{ device_info.password }}</p>
+        <p><strong>2.4 GHz SSID:</strong> {{ device_info.ssid1 }}</p>
+        <p><strong>2.4 GHz Password:</strong> {{ device_info.password1 }}</p>
+        <p><strong>5 GHz SSID:</strong> {{ device_info.ssid2 }}</p>
+        <p><strong>5 GHz Password:</strong> {{ device_info.password2 }}</p>
+    {% endif %}
+
+    {% if subscription_info %}
+        <h2>Subscription Information</h2>
+        <p><strong>Nickname:</strong> {{ subscription_info.nickname }}</p>
+        <p><strong>Status:</strong> {{ subscription_info.status }}</p>
+        <p><strong>Delinquent:</strong> {{ selected_member_info.delinquent }}</p>
+        <p><strong>Current Period Start:</strong> {{ subscription_info.current_period_start }}</p>
+        <p><strong>Current Period End:</strong> {{ subscription_info.current_period_end }}</p>
+        <p><strong>Last Paid:</strong> {{ subscription_info.last_paid }}</p>
     {% endif %}
 </body>
 </html>
