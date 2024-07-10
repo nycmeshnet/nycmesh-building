@@ -3,11 +3,13 @@ import re
 import sys
 from django.shortcuts import render
 from .forms import LookupForm
+import os
 
 API_URL = 'http://db.grandsvc.mesh/api/v1/members/lookup/'
 INSTALL_API_URL = 'http://db.grandsvc.mesh/api/v1/installs/'
 DEVICE_API_BASE_URL = 'https://10.70.76.21/nms/api/v2.1/devices/onus?parentId='
-API_KEY = ''
+API_KEY = os.environ.get("MESHDB_API_KEY","")
+UISP_API_KEY = os.environ.get("UISP_API_KEY", "")
 
 headers = {
     'accept': 'application/json',
@@ -38,7 +40,7 @@ def get_install_unit_and_network_number(install_number, headers):
 def get_device_data(parent_id):
     headers = {
         'accept': 'application/json',
-        'x-auth-token': ''
+        'x-auth-token': UISP_API_KEY,
     }
     url = f"{DEVICE_API_BASE_URL}{parent_id}"
     response = requests.get(url, headers=headers, verify=False)
