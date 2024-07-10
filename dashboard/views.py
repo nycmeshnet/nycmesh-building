@@ -1,17 +1,22 @@
 import requests
 import re
 import sys
+import datetime
 from django.shortcuts import render
 from .forms import LookupForm
 
 API_URL = 'http://db.grandsvc.mesh/api/v1/members/lookup/'
 INSTALL_API_URL = 'http://db.grandsvc.mesh/api/v1/installs/'
 DEVICE_API_BASE_URL = 'https://10.70.76.21/nms/api/v2.1/devices/onus?parentId='
-API_KEY = ''
+STRIPE_CUSTOMER_API_URL = 'https://api.stripe.com/v1/customers/search'
+STRIPE_SUBSCRIPTION_API_URL = 'https://api.stripe.com/v1/subscriptions'
+MESHDB_API_KEY = ''
+UISP_API_KEY = ''
+STRIPE_API_KEY = ''
 
 headers = {
     'accept': 'application/json',
-    'Authorization': f'Token {API_KEY}'
+    'Authorization': f'Token {MESHDB_API_KEY}'
 }
 
 ALLOWED_NETWORK_NUMBERS = [1932, 1933, 1934]
@@ -38,7 +43,7 @@ def get_install_unit_and_network_number(install_number, headers):
 def get_device_data(parent_id):
     headers = {
         'accept': 'application/json',
-        'x-auth-token': ''
+        'x-auth-token': f'{UISP_API_KEY}'
     }
     url = f"{DEVICE_API_BASE_URL}{parent_id}"
     response = requests.get(url, headers=headers, verify=False)
@@ -47,59 +52,111 @@ def get_device_data(parent_id):
     else:
         return None
 
+def fetch_stripe_customer(email):
+    response = requests.get(
+        STRIPE_CUSTOMER_API_URL,
+        headers={
+            'Authorization': f'Bearer {STRIPE_API_KEY}',
+            'Stripe-Version': '2024-06-20'
+        },
+        params={'query': f"email:'{email}'"}
+    )
+    if response.status_code == 200:
+        data = response.json()
+        if data['data']:
+            customer = data['data'][0]
+            return customer['id'], customer['delinquent']
+    return None, None
+
+def fetch_stripe_subscription(customer_id):
+    response = requests.get(
+        STRIPE_SUBSCRIPTION_API_URL,
+        headers={
+            'Authorization': f'Bearer {STRIPE_API_KEY}',
+            'Stripe-Version': '2024-06-20'
+        },
+        params={'customer': customer_id}
+    )
+    if response.status_code == 200:
+        data = response.json()
+        if data['data']:
+            subscription = data['data'][0]
+            nickname = subscription['items']['data'][0]['price']['nickname']
+            status = subscription['status']
+            current_period_start = datetime.datetime.utcfromtimestamp(subscription['current_period_start']).strftime('%Y-%m-%d %H:%M:%S')
+            current_period_end = datetime.datetime.utcfromtimestamp(subscription['current_period_end']).strftime('%Y-%m-%d %H:%M:%S')
+            latest_invoice_id = subscription['latest_invoice']
+            invoice_response = requests.get(f'https://api.stripe.com/v1/invoices/{latest_invoice_id}', headers={'Authorization': f'Bearer {STRIPE_API_KEY}'})
+            invoice_data = invoice_response.json()
+            last_paid = datetime.datetime.utcfromtimestamp(invoice_data['status_transitions']['paid_at']).strftime('%Y-%m-%d %H:%M:%S')
+            return {
+                'nickname': nickname,
+                'status': status,
+                'current_period_start': current_period_start,
+                'current_period_end': current_period_end,
+                'last_paid': last_paid
+            }
+    return None
+
 def fetch_device_info(selected_member_info):
     install_number = selected_member_info['installs'][0]
     unit, network_number = get_install_unit_and_network_number(install_number, headers)
     
+    device_info = None
     if unit:
         selected_member_info['unit'] = unit
         
-        # Fetch device data if network number matches
         if network_number in DEVICE_PARENT_IDS:
             parent_id = DEVICE_PARENT_IDS[network_number]
             device_data = get_device_data(parent_id)
-            print(network_number, file=sys.stderr)
-            print(parent_id, file=sys.stderr)
             
-            # Filter device data by unit name using a for loop
-            device = None
             if device_data:
                 for d in device_data:
                     if unit in d['identification']['name']:
-                        device = d
+                        device_info = {
+                            'name': d['identification']['name'],
+                            'status': d['overview']['status'],
+                            'signal': d['overview'].get('signal', 'N/A'),
+                            'lastSeen': d['overview']['lastSeen'],
+                            'model': d['identification'].get('model', 'N/A'),
+                            'ssid1': next((iface['wireless']['ssid'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan0'), 'N/A'),
+                            'ssid2': next((iface['wireless']['ssid'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan1'), 'N/A'),
+                            'password1': next((iface['wireless']['key'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan0'), 'N/A'),
+                            'password2': next((iface['wireless']['key'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan1'), 'N/A')
+                        }
                         break
-                
-                if device:
-                    device_info = {
-                        'name': device['identification']['name'],
-                        'status': device['overview']['status'],
-                        'signal': device['overview'].get('signal', 'N/A'),
-                        'lastSeen': device['overview']['lastSeen'],
-                        'model': device['identification'].get('model', 'N/A'),
-                        'ssid1': next((iface['wireless']['ssid'] for iface in device['interfaces'] if iface['identification']['name'] == 'wlan0'), 'N/A'),
-                        'ssid2': next((iface['wireless']['ssid'] for iface in device['interfaces'] if iface['identification']['name'] == 'wlan1'), 'N/A'),
-                        'password': next((iface['wireless']['key'] for iface in device['interfaces'] if iface['identification']['name'] == 'wlan0'), 'N/A')
-                    }
-                    return device_info
-    return None
+        
+    # Use stripe_email_address if it exists; otherwise, fallback to primary_email_address
+    stripe_email = selected_member_info.get('stripe_email_address')
+    email = stripe_email if stripe_email else selected_member_info['primary_email_address']
+    
+    customer_id, delinquent = fetch_stripe_customer(email)
+    selected_member_info['delinquent'] = delinquent
+    
+    subscription_info = None
+    if customer_id:
+        subscription_info = fetch_stripe_subscription(customer_id)
+    
+    return device_info, subscription_info
 
 def index(request):
     results = None
     error_message = None
     selected_member_info = None
     device_info = None
+    subscription_info = None
 
     if request.method == 'POST':
         form = LookupForm(request.POST, results=request.session.get('results', []))
         if form.is_valid():
             selected_member_id = form.cleaned_data.get('selected_member')
             if selected_member_id:
-                selected_member_id = str(selected_member_id)  # Ensure it is a string
+                selected_member_id = str(selected_member_id)
                 results = request.session.get('results', [])
                 selected_member_info = next((m for m in results if str(m['id']) == selected_member_id), None)
                 
                 if selected_member_info:
-                    device_info = fetch_device_info(selected_member_info)
+                    device_info, subscription_info = fetch_device_info(selected_member_info)
             else:
                 query = form.cleaned_data['query']
                 params = {}
@@ -133,7 +190,7 @@ def index(request):
                     request.session['results'] = results
                     if len(results) == 1:
                         selected_member_info = results[0]
-                        device_info = fetch_device_info(selected_member_info)
+                        device_info, subscription_info = fetch_device_info(selected_member_info)
                     elif not results:
                         error_message = "No results found."
                 else:
@@ -149,5 +206,6 @@ def index(request):
         'results': results,
         'error_message': error_message,
         'selected_member_info': selected_member_info,
-        'device_info': device_info
+        'device_info': device_info,
+        'subscription_info': subscription_info
     })
