@@ -172,33 +172,5 @@
             </tbody>
         </table>
     {% endif %}
-
-    {% if selected_member_info.ninja_invoices %}
-        <h2>Ninja Invoices</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Reminder 1 Sent</th>
-                    <th>Reminder 2 Sent</th>
-                    <th>Reminder 3 Sent</th>
-                    <th>Next Send Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for invoice in selected_member_info.ninja_invoices %}
-                    <tr>
-                        <td>{{ invoice.amount }}</td>
-                        <td>{{ invoice.date }}</td>
-                        <td>{{ invoice.reminder1_sent }}</td>
-                        <td>{{ invoice.reminder2_sent }}</td>
-                        <td>{{ invoice.reminder3_sent }}</td>
-                        <td>{{ invoice.next_send_date }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
 </body>
 </html>
