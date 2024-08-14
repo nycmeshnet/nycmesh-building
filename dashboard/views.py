@@ -4,6 +4,7 @@ import sys
 import datetime
 from django.shortcuts import render
 from .forms import LookupForm
+import os
 
 API_URL = 'http://db.grandsvc.mesh/api/v1/members/lookup/'
 INSTALL_API_URL = 'http://db.grandsvc.mesh/api/v1/installs/'
@@ -12,10 +13,10 @@ STRIPE_CUSTOMER_API_URL = 'https://api.stripe.com/v1/customers/search'
 STRIPE_SUBSCRIPTION_API_URL = 'https://api.stripe.com/v1/subscriptions'
 NINJA_API_URL = 'https://ninja.nycmesh.net/api/v1/clients'
 NINJA_INVOICE_API_URL = 'https://ninja.nycmesh.net/api/v1/invoices'
-MESHDB_API_KEY = ''
-UISP_API_KEY = ''
-STRIPE_API_KEY = ''
-NINJA_API_TOKEN = ''
+MESHDB_API_KEY = os.environ.get("MESHDB_API_KEY","")
+UISP_API_KEY = os.environ.get("UISP_API_KEY", "")
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "")
+NINJA_API_TOKEN = os.environ.get("NINJA_API_TOKEN", "")
 
 headers = {
     'accept': 'application/json',
