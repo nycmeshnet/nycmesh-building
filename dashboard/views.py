@@ -10,9 +10,12 @@ INSTALL_API_URL = 'http://db.grandsvc.mesh/api/v1/installs/'
 DEVICE_API_BASE_URL = 'https://10.70.76.21/nms/api/v2.1/devices/onus?parentId='
 STRIPE_CUSTOMER_API_URL = 'https://api.stripe.com/v1/customers/search'
 STRIPE_SUBSCRIPTION_API_URL = 'https://api.stripe.com/v1/subscriptions'
+NINJA_API_URL = 'https://ninja.nycmesh.net/api/v1/clients'
+NINJA_INVOICE_API_URL = 'https://ninja.nycmesh.net/api/v1/invoices'
 MESHDB_API_KEY = ''
 UISP_API_KEY = ''
 STRIPE_API_KEY = ''
+NINJA_API_TOKEN = ''
 
 headers = {
     'accept': 'application/json',
@@ -47,6 +50,10 @@ def get_device_data(parent_id):
     }
     url = f"{DEVICE_API_BASE_URL}{parent_id}"
     response = requests.get(url, headers=headers, verify=False)
+                
+    full_url = response.url
+    print(f"UISP URL: {full_url}", file=sys.stderr)
+    
     if response.status_code == 200:
         return response.json()
     else:
@@ -98,6 +105,48 @@ def fetch_stripe_subscription(customer_id):
             }
     return None
 
+def fetch_ninja_client(building_apt):
+    response = requests.get(
+        NINJA_API_URL,
+        headers={'X-API-TOKEN': NINJA_API_TOKEN},
+        params={'name': building_apt}
+    )
+    
+    full_url = response.url
+    print(f"Ninja Client URL: {full_url}", file=sys.stderr)
+    
+    if response.status_code == 200:
+        data = response.json()
+        if data['data']:
+            return data['data'][0]
+    return None
+
+def fetch_ninja_invoices(client_id):
+    response = requests.get(
+        NINJA_INVOICE_API_URL,
+        headers={'X-API-TOKEN': NINJA_API_TOKEN},
+        params={'client_id': client_id, 'client_status': 'unpaid,overdue'}
+    )
+    
+    full_url = response.url
+    print(f"Ninja Invoice URL: {full_url}", file=sys.stderr)
+
+    if response.status_code == 200:
+        data = response.json()
+        if data['data']:
+            invoices = []
+            for invoice in data['data']:
+                invoices.append({
+                    'amount': invoice['amount'],
+                    'date': invoice['date'],
+                    'reminder1_sent': invoice['reminder1_sent'],
+                    'reminder2_sent': invoice['reminder2_sent'],
+                    'reminder3_sent': invoice['reminder3_sent'],
+                    'next_send_date': invoice['next_send_date']
+                })
+            return invoices
+    return None
+
 def fetch_device_info(selected_member_info):
     install_number = selected_member_info['installs'][0]
     unit, network_number = get_install_unit_and_network_number(install_number, headers)
@@ -113,23 +162,54 @@ def fetch_device_info(selected_member_info):
             if device_data:
                 for d in device_data:
                     if unit in d['identification']['name']:
+                        # Debugging: print the structure of d['interfaces']
+                        print(d['interfaces'], file=sys.stderr)
+                        
+                        ssid1 = 'N/A'
+                        ssid2 = 'N/A'
+                        password1 = 'N/A'
+                        password2 = 'N/A'
+
+                        for iface in d['interfaces']:
+                            if iface['identification']['name'] == 'wlan0':
+                                ssid1 = iface['wireless']['ssid']
+                                password1 = iface['wireless']['key']
+                            elif iface['identification']['name'] == 'wlan1':
+                                ssid2 = iface['wireless']['ssid']
+                                password2 = iface['wireless']['key']
+
                         device_info = {
                             'name': d['identification']['name'],
                             'status': d['overview']['status'],
                             'signal': d['overview'].get('signal', 'N/A'),
                             'lastSeen': d['overview']['lastSeen'],
                             'model': d['identification'].get('model', 'N/A'),
-                            'ssid1': next((iface['wireless']['ssid'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan0'), 'N/A'),
-                            'ssid2': next((iface['wireless']['ssid'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan1'), 'N/A'),
-                            'password1': next((iface['wireless']['key'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan0'), 'N/A'),
-                            'password2': next((iface['wireless']['key'] for iface in d['interfaces'] if iface['identification']['name'] == 'wlan1'), 'N/A')
+                            'ssid1': ssid1,
+                            'ssid2': ssid2,
+                            'password1': password1,
+                            'password2': password2
                         }
                         break
-        
+
     # Use stripe_email_address if it exists; otherwise, fallback to primary_email_address
     stripe_email = selected_member_info.get('stripe_email_address')
     email = stripe_email if stripe_email else selected_member_info['primary_email_address']
-    
+
+    # Fetch Ninja client information
+    install_to_building_map = {
+        1932: 410,
+        1933: 460,
+        1934: 131
+    }
+    building_number = install_to_building_map.get(network_number)
+    building_apt = str(building_number) + "-" + unit
+    ninja_client = fetch_ninja_client(building_apt) if unit else None
+    if ninja_client:
+        ninja_invoices = fetch_ninja_invoices(ninja_client['id'])
+        selected_member_info['ninja_invoices'] = ninja_invoices
+    else: 
+        print(building_apt + " is bad", file=sys.stderr)
+
     customer_id, delinquent = fetch_stripe_customer(email)
     selected_member_info['delinquent'] = delinquent
     
@@ -160,6 +240,7 @@ def index(request):
             else:
                 query = form.cleaned_data['query']
                 params = {}
+                params['page_size'] = 1000
                 if re.match(r"^\d{10}$", query):
                     normalized_phone = normalize_phone_number(query)
                     params['phone_number'] = normalized_phone
@@ -171,7 +252,7 @@ def index(request):
                 response = requests.get(API_URL, headers=headers, params=params)
                 
                 full_url = response.url
-                print(f"Full URL: {full_url}", file=sys.stderr)
+                print(f"MeshDB URL: {full_url}", file=sys.stderr)
                 
                 if response.status_code == 200:
                     members = response.json().get('results', [])
