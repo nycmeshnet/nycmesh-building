@@ -207,15 +207,11 @@ def fetch_device_info(selected_member_info):
                         break
 
         building_number = install_to_building_map.get(network_number)
-
-        raise Exception(unit)
         building_apt = str(building_number) + "-" + unit
         ninja_client = fetch_ninja_client(building_apt) if unit else None
         if ninja_client:
             ninja_invoices = fetch_ninja_invoices(ninja_client['id'])
             selected_member_info['ninja_invoices'] = ninja_invoices
-        else:
-            print(building_apt + " is bad", file=sys.stderr)
 
     customer_id, delinquent = fetch_stripe_customer(email)
     selected_member_info['delinquent'] = delinquent
