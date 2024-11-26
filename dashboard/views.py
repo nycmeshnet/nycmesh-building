@@ -5,9 +5,12 @@ import datetime
 from django.shortcuts import render
 from .forms import LookupForm
 import os
+from dotenv import load_dotenv
 
-API_URL = 'http://db.grandsvc.mesh/api/v1/members/lookup/'
-INSTALL_API_URL = 'http://db.grandsvc.mesh/api/v1/installs/'
+load_dotenv()
+
+API_URL = 'https://db.nycmesh.net/api/v1/members/lookup/'
+INSTALL_API_URL = 'https://db.nycmesh.net/api/v1/installs/'
 DEVICE_API_BASE_URL = 'https://10.70.76.21/nms/api/v2.1/devices/onus?parentId='
 STRIPE_CUSTOMER_API_URL = 'https://api.stripe.com/v1/customers/search'
 STRIPE_SUBSCRIPTION_API_URL = 'https://api.stripe.com/v1/subscriptions'
@@ -23,11 +26,18 @@ headers = {
     'Authorization': f'Token {MESHDB_API_KEY}'
 }
 
-ALLOWED_NETWORK_NUMBERS = [1932, 1933, 1934]
+ALLOWED_NETWORK_NUMBERS = [1932, 1933, 1934, 1936]
 DEVICE_PARENT_IDS = {
     1932: 'a57ddde1-6fff-463a-bbee-cbe90258daa6',
     1933: '7e6d228f-2693-4ba2-9c0a-82811289f9f3',
-    1934: '7ee45009-6bc2-4a26-9b83-a3b07c70a3f6'
+    1934: '7ee45009-6bc2-4a26-9b83-a3b07c70a3f6',
+    1936: '4a6f43ed-ac8b-41c6-867b-e893d9737c31'
+}
+install_to_building_map = {
+    1932: 410,
+    1933: 460,
+    1934: 131,
+    1936: 165
 }
 
 def normalize_phone_number(phone):
@@ -36,11 +46,11 @@ def normalize_phone_number(phone):
         return f"+1 {phone[:3]}-{phone[3:6]}-{phone[6:]}"
     return phone
 
-def get_install_unit_and_network_number(install_number, headers):
-    response = requests.get(f"{INSTALL_API_URL}{install_number}/", headers=headers)
+def get_install_unit_and_network_number(install_id, headers):
+    response = requests.get(f"{INSTALL_API_URL}{install_id}/", headers=headers)
     if response.status_code == 200:
         data = response.json()
-        return data.get('unit', 'Unit info not available'), data.get('network_number', None)
+        return data.get('unit'), (data.get('node') or {}).get('network_number')
     else:
         return None, None
 
@@ -51,10 +61,10 @@ def get_device_data(parent_id):
     }
     url = f"{DEVICE_API_BASE_URL}{parent_id}"
     response = requests.get(url, headers=headers, verify=False)
-                
+
     full_url = response.url
     print(f"UISP URL: {full_url}", file=sys.stderr)
-    
+
     if response.status_code == 200:
         return response.json()
     else:
@@ -112,10 +122,10 @@ def fetch_ninja_client(building_apt):
         headers={'X-API-TOKEN': NINJA_API_TOKEN},
         params={'name': building_apt}
     )
-    
+
     full_url = response.url
     print(f"Ninja Client URL: {full_url}", file=sys.stderr)
-    
+
     if response.status_code == 200:
         data = response.json()
         if data['data']:
@@ -128,7 +138,7 @@ def fetch_ninja_invoices(client_id):
         headers={'X-API-TOKEN': NINJA_API_TOKEN},
         params={'client_id': client_id, 'client_status': 'unpaid,overdue'}
     )
-    
+
     full_url = response.url
     print(f"Ninja Invoice URL: {full_url}", file=sys.stderr)
 
@@ -149,23 +159,27 @@ def fetch_ninja_invoices(client_id):
     return None
 
 def fetch_device_info(selected_member_info):
-    install_number = selected_member_info['installs'][0]
-    unit, network_number = get_install_unit_and_network_number(install_number, headers)
-    
+    install = selected_member_info['installs'][0]
+    unit, network_number = get_install_unit_and_network_number(install['id'], headers)
+
+    # Use stripe_email_address if it exists; otherwise, fallback to primary_email_address
+    stripe_email = selected_member_info.get('stripe_email_address')
+    email = stripe_email if stripe_email else selected_member_info['primary_email_address']
+
     device_info = None
     if unit:
         selected_member_info['unit'] = unit
-        
+
         if network_number in DEVICE_PARENT_IDS:
             parent_id = DEVICE_PARENT_IDS[network_number]
             device_data = get_device_data(parent_id)
-            
+
             if device_data:
                 for d in device_data:
                     if unit in d['identification']['name']:
                         # Debugging: print the structure of d['interfaces']
-                        print(d['interfaces'], file=sys.stderr)
-                        
+                        #print(d['interfaces'], file=sys.stderr)
+
                         ssid1 = 'N/A'
                         ssid2 = 'N/A'
                         password1 = 'N/A'
@@ -192,32 +206,24 @@ def fetch_device_info(selected_member_info):
                         }
                         break
 
-    # Use stripe_email_address if it exists; otherwise, fallback to primary_email_address
-    stripe_email = selected_member_info.get('stripe_email_address')
-    email = stripe_email if stripe_email else selected_member_info['primary_email_address']
+        building_number = install_to_building_map.get(network_number)
 
-    # Fetch Ninja client information
-    install_to_building_map = {
-        1932: 410,
-        1933: 460,
-        1934: 131
-    }
-    building_number = install_to_building_map.get(network_number)
-    building_apt = str(building_number) + "-" + unit
-    ninja_client = fetch_ninja_client(building_apt) if unit else None
-    if ninja_client:
-        ninja_invoices = fetch_ninja_invoices(ninja_client['id'])
-        selected_member_info['ninja_invoices'] = ninja_invoices
-    else: 
-        print(building_apt + " is bad", file=sys.stderr)
+        raise Exception(unit)
+        building_apt = str(building_number) + "-" + unit
+        ninja_client = fetch_ninja_client(building_apt) if unit else None
+        if ninja_client:
+            ninja_invoices = fetch_ninja_invoices(ninja_client['id'])
+            selected_member_info['ninja_invoices'] = ninja_invoices
+        else:
+            print(building_apt + " is bad", file=sys.stderr)
 
     customer_id, delinquent = fetch_stripe_customer(email)
     selected_member_info['delinquent'] = delinquent
-    
+
     subscription_info = None
     if customer_id:
         subscription_info = fetch_stripe_subscription(customer_id)
-    
+
     return device_info, subscription_info
 
 def index(request):
@@ -235,7 +241,7 @@ def index(request):
                 selected_member_id = str(selected_member_id)
                 results = request.session.get('results', [])
                 selected_member_info = next((m for m in results if str(m['id']) == selected_member_id), None)
-                
+
                 if selected_member_info:
                     device_info, subscription_info = fetch_device_info(selected_member_info)
             else:
@@ -251,17 +257,17 @@ def index(request):
                     params['name'] = query
 
                 response = requests.get(API_URL, headers=headers, params=params)
-                
+
                 full_url = response.url
                 print(f"MeshDB URL: {full_url}", file=sys.stderr)
-                
+
                 if response.status_code == 200:
                     members = response.json().get('results', [])
                     valid_members = []
                     for member in members:
                         valid = False
-                        for install_number in member['installs']:
-                            unit, network_number = get_install_unit_and_network_number(install_number, headers)
+                        for install in member['installs']:
+                            unit, network_number = get_install_unit_and_network_number(install['id'], headers)
                             if network_number in ALLOWED_NETWORK_NUMBERS:
                                 valid = True
                                 member['unit'] = unit
