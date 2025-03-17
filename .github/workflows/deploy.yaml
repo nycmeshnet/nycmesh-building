@@ -39,3 +39,12 @@ jobs:
           push: true
           tags: danielhmetro/building:latest
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy_to_dev3:
+    name: Deploy to dev 3
+    uses: ./.github/workflows/helm_deploy.yaml
+    with:
+      environment: dev3
+    secrets: inherit
+    needs: push_to_registry
+    if: github.ref == 'refs/heads/main'
