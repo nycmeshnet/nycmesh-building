@@ -10,3 +10,6 @@ class LookupForm(forms.Form):
         if results:
             choices = [(str(result['id']), result['name']) for result in results]
             self.fields['selected_member'].choices = choices
+
+class ReportForm(forms.Form):
+    report = forms.CharField(label='Selected Month', required=True)
