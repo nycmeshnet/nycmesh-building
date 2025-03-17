@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     branches:
       - main
-      - danielhmetr-patch-1
+      - danielhmetro-patch-1
 
 permissions: read-all
 
