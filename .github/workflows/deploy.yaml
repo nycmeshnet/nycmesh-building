@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - danielhmetro-patch-1
   workflow_dispatch:
     branches:
       - main
+      - danielhmetr-patch-1
 
 permissions: read-all
 
