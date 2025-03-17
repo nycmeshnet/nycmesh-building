@@ -24,7 +24,7 @@ jobs:
           name: id_ed25519 # optional
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
-      
+
       - name: Setup WireGuard
         run:  |
           sudo apt install wireguard
@@ -53,7 +53,7 @@ jobs:
             --set building.meshdb_api_key="${{ secrets.MESHDB_API_KEY }}" \
             --set building.uisp_api_key="${{ secrets.UISP_API_KEY }}" \
             --set building.stripe_api_key="${{ secrets.STRIPE_API_KEY }}" \
-            --set building.ninja_api_key ="${{ secrets.NINJA_API_KEY }}"
-          
+            --set building.ninja_api_key="${{ secrets.NINJA_API_KEY }}"
+
           # Rolling restart
           kubectl --kubeconfig ./config --server https://${{ secrets.SSH_TARGET_IP }}:6443 -n building rollout restart deploy
