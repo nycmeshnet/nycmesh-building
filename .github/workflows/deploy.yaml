@@ -49,4 +49,4 @@ jobs:
       environment: dev3
     secrets: inherit
     needs: push_to_registry
-    if: github.ref == 'refs/heads/main'
+#    if: github.ref == 'refs/heads/main'
