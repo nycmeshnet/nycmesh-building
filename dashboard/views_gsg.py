@@ -6,6 +6,7 @@ import csv
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .forms import LookupForm, ReportForm
 from dotenv import load_dotenv
 from collections import defaultdict
@@ -299,6 +300,7 @@ def fetch_all_installs():
                 installs.append(install)
     return installs
 
+@login_required
 def index(request):
     results = None
     error_message = None
@@ -387,6 +389,7 @@ def index(request):
         'all_units': all_units
     })
 
+@login_required
 def reports(request):
     months = []
     start_date = datetime(2022, 1, 1)  # Start from January 2022
@@ -620,6 +623,7 @@ def reports(request):
         'stats': stats
     })
 
+@login_required
 def billing(request):
     months = []
     start_date = datetime(2022, 1, 1)  # Start from January 2022
