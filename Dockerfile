@@ -8,6 +8,5 @@ COPY manage.py ./
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
-RUN python manage.py migrate
 
-CMD [ "python", "manage.py", "runserver", "0.0.0.0:8080" ]
+ENTRYPOINT python manage.py migrate && exec python manage.py runserver 0.0.0.0:8080
