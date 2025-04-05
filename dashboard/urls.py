@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from . import views-gsg
+from . import views_gsg
 
 urlpatterns = [
     path("gsg/", views-gsg.index, name="index"),
