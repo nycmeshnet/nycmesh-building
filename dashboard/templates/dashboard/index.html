@@ -51,12 +51,13 @@
         <div class="col">
           {% if user.is_authenticated %}
             <form action="{% url 'oidc_logout' %}" method="post">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-primary mb-2">Logout</button>
+              {% csrf_token %}  
+              <button type="button" class="btn btn-primary mb-2" onclick="location.href = '/gsg/'>GSG Dashboard</button>
+              <button type="submit" class="btn btn-danger mb-2">Logout</button>
             </form>
             <p>Current user: {{ user.email }}</p>
           {% else %}
-            <button type="button" class="btn btn-primary mb-2" onclick="location.href = '{% url 'oidc_authentication_init' %}'>Login</button>
+            <button type="button" class="btn btn-success mb-2" onclick="location.href = '{% url 'oidc_authentication_init' %}'>Login</button>
           {% endif %}
         </div>
       </div>
