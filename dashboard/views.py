@@ -23,7 +23,7 @@ NINJA_INVOICE_API_URL = 'https://ninja.nycmesh.net/api/v1/invoices'
 MESHDB_API_KEY = os.environ.get("MESHDB_API_KEY","")
 UISP_API_KEY = os.environ.get("UISP_API_KEY", "")
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "")
-NINJA_API_TOKEN = os.environ.get("NINJA_API_TOKEN", "")
+NINJA_API_KEY = os.environ.get("NINJA_API_KEY", "")
 
 headers = {
     'accept': 'application/json',
