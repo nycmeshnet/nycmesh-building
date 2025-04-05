@@ -57,7 +57,7 @@
             </form>
             <p>Current user: {{ user.email }}</p>
           {% else %}
-            <button type="button" class="btn btn-success mb-2" onclick="location.href = '{% url 'oidc_authentication_init' %}'>Login</button>
+            <button type="button" class="btn btn-success mb-2" onclick="location.href = '{% url 'oidc_authentication_init' %}'">Login</button>
           {% endif %}
         </div>
       </div>
