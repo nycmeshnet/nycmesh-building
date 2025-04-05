@@ -377,7 +377,7 @@ def index(request):
             selected_member_info = response.json()
             subscription_info = fetch_subscription_info(selected_member_info)
 
-    return render(request, 'dashboard/lookup.html', {
+    return render(request, 'dashboard/gsg-index.html', {
         'form': form,
         'results': results,
         'error_message': error_message,
@@ -613,7 +613,7 @@ def reports(request):
                     "avg_wait": round(avg_wait / len(support), 2)
                 }
     
-    return render(request, 'dashboard/reports.html', {
+    return render(request, 'dashboard/gsg-reports.html', {
         'months': months,
         'report': report,
         'support': support,
@@ -670,7 +670,7 @@ def billing(request):
         next_year = start_date.year + (1 if start_date.month == 12 else 0)
         start_date = start_date.replace(year=next_year, month=next_month)
 
-    return render(request, 'dashboard/billing.html', {
+    return render(request, 'dashboard/gsg-billing.html', {
         'months': months,
         'total': len(installed)
     })
