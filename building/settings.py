@@ -65,6 +65,7 @@ OIDC_OP_USER_ENDPOINT = "https://openidconnect.googleapis.com/v1/userinfo"
 OIDC_OP_JWKS_ENDPOINT = "https://www.googleapis.com/oauth2/v3/certs"
 LOGIN_REDIRECT_URL = "https://building.mesh.nycmesh.net"
 LOGOUT_REDIRECT_URL = "https://building.mesh.nycmesh.net"
+LOGIN_URL = "https://building.mesh.nycmesh.net/oidc/authenticate/"
 
 TEMPLATES = [
     {
@@ -104,7 +105,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
