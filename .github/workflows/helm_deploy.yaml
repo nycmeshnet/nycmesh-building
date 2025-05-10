@@ -47,6 +47,7 @@ jobs:
             -n building \
             --create-namespace \
             -f ./helm/values.yaml \
+            --set image.digest="${{ inputs.image_digest }}" \
             --set imageCredentials.username="${{ secrets.PULL_SECRET_USERNAME }}" \
             --set imageCredentials.password="${{ secrets.PULL_SECRET_PASSWORD }}" \
             --set imageCredentials.email="${{ secrets.PULL_SECRET_EMAIL }}" \
