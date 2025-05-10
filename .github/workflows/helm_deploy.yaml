@@ -55,6 +55,3 @@ jobs:
             --set building.uisp_api_key="${{ secrets.UISP_API_KEY }}" \
             --set building.stripe_api_key="${{ secrets.STRIPE_API_KEY }}" \
             --set building.ninja_api_key="${{ secrets.NINJA_API_KEY }}"
-
-          # Rolling restart
-          kubectl --kubeconfig ./config --server https://${{ secrets.SSH_TARGET_IP }}:6443 -n building rollout restart deploy
