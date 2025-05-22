@@ -53,4 +53,13 @@ jobs:
       image_digest: ${{ needs.push_to_registry.outputs.image_digest }}
     secrets: inherit
     needs: push_to_registry
+
+  deploy_to_prod1:
+    name: Deploy to prod 1
+    uses: ./.github/workflows/helm_deploy.yaml
+    with:
+      environment: prod1
+      image_digest: ${{ needs.push_to_registry.outputs.image_digest }}
+    secrets: inherit
+    needs: push_to_registry
 #    if: github.ref == 'refs/heads/main'
