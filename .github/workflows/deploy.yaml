@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - danielhmetro-patch-1
+      - oidc
   workflow_dispatch:
     branches:
       - main
-      - danielhmetro-patch-1
+      - oidc
 
 permissions: read-all
 

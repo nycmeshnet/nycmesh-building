@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -36,12 +36,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.auth',
+    'mozilla_django_oidc',
     'dashboard',
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+)
+
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -49,6 +56,16 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'building.urls'
+
+OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+OIDC_OP_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
+OIDC_OP_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+OIDC_OP_USER_ENDPOINT = "https://openidconnect.googleapis.com/v1/userinfo"
+OIDC_OP_JWKS_ENDPOINT = "https://www.googleapis.com/oauth2/v3/certs"
+LOGIN_REDIRECT_URL = "https://building.mesh.nycmesh.net"
+LOGOUT_REDIRECT_URL = "https://building.mesh.nycmesh.net"
+LOGIN_URL = "https://building.mesh.nycmesh.net/oidc/authenticate/"
 
 TEMPLATES = [
     {
@@ -88,7 +105,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
