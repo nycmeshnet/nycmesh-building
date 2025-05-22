@@ -61,5 +61,5 @@ jobs:
       environment: prod1
       image_digest: ${{ needs.push_to_registry.outputs.image_digest }}
     secrets: inherit
-    needs: push_to_registry
+    needs: deploy_to_dev3
 #    if: github.ref == 'refs/heads/main'
