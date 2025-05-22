@@ -17,6 +17,8 @@ jobs:
     name: Push Docker Image to Docker Hub
     runs-on: ubuntu-latest
     environment: dev3
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -34,6 +36,7 @@ jobs:
           images: danielhmetro/building
       
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: ./
@@ -47,6 +50,7 @@ jobs:
     uses: ./.github/workflows/helm_deploy.yaml
     with:
       environment: dev3
+      image_digest: ${{ needs.push_to_registry.outputs.image_digest }}
     secrets: inherit
     needs: push_to_registry
 #    if: github.ref == 'refs/heads/main'
