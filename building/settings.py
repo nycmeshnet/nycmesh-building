@@ -67,8 +67,6 @@ OIDC_RP_SIGN_ALGO = "RS256"
 LOGIN_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGOUT_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGIN_URL = f"https://{os.environ['FQDN']}/oidc/authenticate/"
-LOGIN_REDIRECT_URL = "https://building.mesh.nycmesh.net"
-LOGOUT_REDIRECT_URL = "https://building.mesh.nycmesh.net"
 
 TEMPLATES = [
     {
