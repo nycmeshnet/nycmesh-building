@@ -20,14 +20,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-e2+3^g7)n1mt)n^*o$_gozq1d78^##1w7#o$i#q+s*6v21#vy('
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['http://10.70.187.216','http://building.mesh']
+CSRF_TRUSTED_ORIGINS = ['http://10.70.187.216','https://building.mesh.nycmesh.net', 'https://buildingdev.mesh.nycmesh.net']
 
 # Application definition
 
@@ -63,9 +63,9 @@ OIDC_OP_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
 OIDC_OP_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 OIDC_OP_USER_ENDPOINT = "https://openidconnect.googleapis.com/v1/userinfo"
 OIDC_OP_JWKS_ENDPOINT = "https://www.googleapis.com/oauth2/v3/certs"
-LOGIN_REDIRECT_URL = "https://building.mesh.nycmesh.net"
-LOGOUT_REDIRECT_URL = "https://building.mesh.nycmesh.net"
-LOGIN_URL = "https://building.mesh.nycmesh.net/oidc/authenticate/"
+LOGIN_REDIRECT_URL = f"https://{os.environ['FQDN']}"
+LOGOUT_REDIRECT_URL = f"https://{os.environ['FQDN']}"
+LOGIN_URL = f"https://{os.environ['FQDN']}/oidc/authenticate/"
 
 TEMPLATES = [
     {

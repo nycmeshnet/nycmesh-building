@@ -42,6 +42,8 @@ spec:
           {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
+          - configMapRef:
+              name: buildingconfig
           - secretRef:
               name: {{ include "nycmesh-building.fullname" . }}
           ports:
