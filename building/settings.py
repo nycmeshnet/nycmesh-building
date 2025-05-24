@@ -68,6 +68,8 @@ LOGIN_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGOUT_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGIN_URL = f"https://{os.environ['FQDN']}/oidc/authenticate/"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+X_FRAME_OPTIONS = "SAMEORIGIN"
 
 TEMPLATES = [
     {
