@@ -24,14 +24,12 @@ class TokenCookieMiddleWare(MiddlewareMixin):
 class OIDCAB(OIDCAuthenticationBackend):
     def create_user(self, claims):
         """Return object for a newly created user account."""
-        # email = claims.get('email')
-        raise Exception(claims)
-        username = claims.get('user_name')
+        username = claims.get('email')
         return self.UserModel.objects.create_user(username)
 
     def filter_users_by_claims(self, claims):
         """Return all users matching the specified username."""
-        username = claims.get('user_name')
+        username = claims.get('email')
         if not username:
             return self.UserModel.objects.none()
         return self.UserModel.objects.filter(username__iexact=username)
