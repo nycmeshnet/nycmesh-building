@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - james/oidc_troubleshooting
   workflow_dispatch:
     branches:
       - main
