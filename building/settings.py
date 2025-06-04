@@ -68,6 +68,7 @@ OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 SESSION_COOKIE_DOMAIN = f".{os.environ['FQDN']}"
+TOKEN_ID_COOKIE = os.environ.get('TOKEN_ID_COOKIE',"auth_user_id")
 LOGIN_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGOUT_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGIN_URL = f"https://{os.environ['FQDN']}/oidc/authenticate/"
