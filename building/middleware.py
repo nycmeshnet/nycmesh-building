@@ -1,5 +1,6 @@
 from .settings import TOKEN_ID_COOKIE, SESSION_COOKIE_DOMAIN
 from django.utils.deprecation import MiddlewareMixin
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 class TokenCookieMiddleWare(MiddlewareMixin):
     """
@@ -19,3 +20,17 @@ class TokenCookieMiddleWare(MiddlewareMixin):
             #else if if no user and cookie remove user cookie, logout
             response.delete_cookie(TOKEN_ID_COOKIE, domain=SESSION_COOKIE_DOMAIN)
         return response
+
+class OIDCAB(OIDCAuthenticationBackend):
+    def create_user(self, claims):
+        """Return object for a newly created user account."""
+        # email = claims.get('email')
+        username = claims.get('user_name')
+        return self.UserModel.objects.create_user(username)
+
+    def filter_users_by_claims(self, claims):
+        """Return all users matching the specified username."""
+        username = claims.get('user_name')
+        if not username:
+            return self.UserModel.objects.none()
+        return self.UserModel.objects.filter(username__iexact=username)

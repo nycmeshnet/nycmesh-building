@@ -78,6 +78,10 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+AUTHENTICATION_BACKENDS = (
+    'building.middleware.OIDCAB',
+)
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
