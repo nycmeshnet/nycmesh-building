@@ -25,7 +25,7 @@ class OIDCAB(OIDCAuthenticationBackend):
     def create_user(self, claims):
         """Return object for a newly created user account."""
         # email = claims.get('email')
-        print(claims)
+        raise claims
         username = claims.get('user_name')
         return self.UserModel.objects.create_user(username)
 
