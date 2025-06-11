@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - james/test_hashes
   workflow_dispatch:
     branches:
       - main
