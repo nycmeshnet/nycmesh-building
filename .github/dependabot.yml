@@ -4,21 +4,20 @@ updates:
   directory: "/"
   schedule:
     interval: "cron"
-      cronjob: "30 9 * * *"
+    cronjob: "30 9 * * *"
   assignees:
    - "danielhmetro"
 - package-ecosystem: "docker"
   directory: "/"
   schedule:
     interval: "cron"
-      cronjob: "4 9 * * *"
+    cronjob: "4 9 * * *"
   assignees:
    - "danielhmetro"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
     interval: "cron"
-      cronjob: "44 9 * * *"
+    cronjob: "44 9 * * *"
   assignees:
    - "danielhmetro"
-  
