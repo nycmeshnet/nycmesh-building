@@ -662,7 +662,7 @@ def billing(request):
                     installed.append(new_install)
                     install['apt'] = new_install
                     month_installs.append(install)
-
+        raise Exception( str( len(month_installs) ) + ", " + month_installs[0]['unit'])
         months.append({
             'value': start_date.strftime("%Y%m"),
             'formatted': start_date.strftime("%B %Y"),
