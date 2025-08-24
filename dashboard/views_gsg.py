@@ -665,14 +665,11 @@ def billing(request):
 
         separator = ' - '
         my_string = separator.join(str(item) for item in month_installs)
-        
-        if install_date and install_date.year == 2025 and install_date.month == 3:
-            raise Exception(str(install_date.year) + ', ' + str(install_date.month) + ', ' + str( len(month_installs) ) + ", " + my_string)
       
         months.append({
             'value': start_date.strftime("%Y%m"),
             'formatted': start_date.strftime("%B %Y"),
-            'count': len(month_installs),
+            'count': my_string,
             'installs': month_installs
         })
 
