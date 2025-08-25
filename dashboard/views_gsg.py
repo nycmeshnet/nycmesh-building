@@ -669,7 +669,7 @@ def billing(request):
         months.append({
             'value': start_date.strftime("%Y%m"),
             'formatted': start_date.strftime("%B %Y"),
-            'count': my_string,
+            'count': len(month_installs),
             'installs': month_installs
         })
 
