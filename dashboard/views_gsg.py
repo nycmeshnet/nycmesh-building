@@ -32,6 +32,7 @@ headers = {
 }
 
 ALLOWED_NETWORK_NUMBERS = [1932, 1933, 1934, 1936]
+ALLOWED_NETWORK_NUMBERS_3 = [1932, 1933, 1934]
 DEVICE_PARENT_IDS = {
     1932: 'a57ddde1-6fff-463a-bbee-cbe90258daa6',
     #1933: '7e6d228f-2693-4ba2-9c0a-82811289f9f3',
@@ -290,9 +291,9 @@ def fetch_all_units(onus = False):
             building_map[building] = None
     return building_map
 
-def fetch_all_installs():
+def fetch_all_installs(network_numbers):
     installs = []
-    for building in ALLOWED_NETWORK_NUMBERS:
+    for building in network_numbers:
         response = requests.get(f"{INSTALL_API_URL}/lookup/?network_number={building}&page_size=9999", headers=headers)
         if response.status_code == 200:
             data = response.json()
@@ -419,7 +420,7 @@ def reports(request):
                 if month['value'] == value:
                     formatted = month['formatted']
 
-            installs = fetch_all_installs()
+            installs = fetch_all_installs(ALLOWED_NETWORK_NUMBERS)
             current_installs = []
             all_active_installs = []
 
@@ -630,7 +631,7 @@ def billing(request):
     current_date = datetime.now()  # Current date
     current_year_month = (current_date.year, current_date.month)
 
-    installs = fetch_all_installs()
+    installs = fetch_all_installs(ALLOWED_NETWORK_NUMBERS_3)
     units = fetch_all_units()
 
     installed = []
@@ -662,9 +663,6 @@ def billing(request):
                     installed.append(new_install)
                     install['apt'] = new_install
                     month_installs.append(install)
-
-        separator = ' - '
-        my_string = separator.join(str(item) for item in month_installs)
       
         months.append({
             'value': start_date.strftime("%Y%m"),
