@@ -9,8 +9,7 @@
         }
         .row {
             display: grid;
-            grid-template-columns: repeat(5, 1fr) 55px repeat(7, 1fr)
-            gap: 2px;
+            grid-template-columns: repeat(5, 1fr) 55px repeat(7, 1fr);
             margin-left: unset;
         }
         .square {
@@ -253,7 +252,7 @@
                 {% for unit in units %}
                     {% if unit.install %}
                     <div class="square {{ unit.install.status }} {{ unit.onu }}">
-                        <a href="/?member={{ unit.install.member.id }}">{{ unit.name }}</a>
+                        <a href="/ph/?member={{ unit.install.member.id }}">{{ unit.name }}</a>
                     </div>
                     {% else %}
                     <div class="square">
