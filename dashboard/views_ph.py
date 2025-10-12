@@ -216,7 +216,6 @@ def fetch_subscription_info(selected_member_info):
     return subscription_info
 
 def fetch_all_units(onus):
-    building_map = {}
     response = requests.get(f"{INSTALL_API_URL}/lookup/?network_number={ALLOWED_NETWORK_NUMBER}&page_size=9999", headers=headers)
     if response.status_code == 200:
         data = response.json()
@@ -245,20 +244,9 @@ def fetch_all_units(onus):
             if not floor in floors:
                 floors[floor] = []
             floors[floor].append(unit)
-        building_map[building] = floors
+        return floors
     else:
-        building_map[building] = None
-    return building_map
-
-def fetch_all_installs(network_numbers):
-    installs = []
-    for building in network_numbers:
-        response = requests.get(f"{INSTALL_API_URL}/lookup/?network_number={building}&page_size=9999", headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            for install in data['results']:
-                installs.append(install)
-    return installs
+        return None
 
 @login_required
 def index(request):
