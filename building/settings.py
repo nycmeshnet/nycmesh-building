@@ -43,6 +43,8 @@ INSTALLED_APPS = [
 
 AUTHENTICATION_BACKENDS = (
     'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+    'building.middleware.OIDCAB',
 )
 
 MIDDLEWARE = [
@@ -69,7 +71,7 @@ OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 SESSION_COOKIE_DOMAIN = f".{os.environ['FQDN']}"
 TOKEN_ID_COOKIE = os.environ.get('TOKEN_ID_COOKIE',"auth_user_id")
-LOGIN_REDIRECT_URL = f"https://{os.environ['FQDN']}/gsg/reports/"
+LOGIN_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGOUT_REDIRECT_URL = f"https://{os.environ['FQDN']}"
 LOGIN_URL = f"https://{os.environ['FQDN']}/oidc/authenticate/"
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -77,10 +79,6 @@ USE_X_FORWARDED_HOST = True
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
-AUTHENTICATION_BACKENDS = (
-    'building.middleware.OIDCAB',
-)
 
 TEMPLATES = [
     {
