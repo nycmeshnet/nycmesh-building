@@ -116,7 +116,7 @@ def fetch_stripe_subscription(customer_id):
 def fetch_ninja_client(building_apt):
     response = requests.get(
         NINJA_API_URL,
-        headers={'X-API-TOKEN': NINJA_API_TOKEN},
+        headers={'X-API-TOKEN': NINJA_API_KEY},
         params={'name': building_apt}
     )
 
@@ -132,7 +132,7 @@ def fetch_ninja_client(building_apt):
 def fetch_ninja_invoices(client_id):
     response = requests.get(
         NINJA_INVOICE_API_URL,
-        headers={'X-API-TOKEN': NINJA_API_TOKEN},
+        headers={'X-API-TOKEN': NINJA_API_KEY},
         params={'client_id': client_id, 'client_status': 'unpaid,overdue'}
     )
 
