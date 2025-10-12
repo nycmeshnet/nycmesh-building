@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 
 from . import views
 from . import views_gsg
+from . import views_ph
 
 urlpatterns = [
     path("gsg/", views_gsg.index, name="gsg_index"),
