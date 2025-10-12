@@ -327,7 +327,7 @@ def index(request):
             selected_member_info = response.json()
             subscription_info = fetch_subscription_info(selected_member_info)
 
-    return render(request, 'dashboard/gsg-index.html', {
+    return render(request, 'dashboard/ph-index.html', {
         'form': form,
         'results': results,
         'error_message': error_message,
