@@ -9,7 +9,7 @@
         }
         .row {
             display: grid;
-            grid-template-columns: repeat(24, 1fr);
+            grid-template-columns: repeat(5, 1fr) 55px repeat(7, 1fr)
             gap: 2px;
             margin-left: unset;
         }
@@ -48,7 +48,7 @@
     </style>
 </head>
 <body class="p-3">
-    <h1>GSG Dashboard</h1>
+    <h1>PH Dashboard</h1>
     <div class="column">
         <form method="post" class="form-inline">
             {% csrf_token %}
@@ -246,25 +246,23 @@
         {% endif %}
     </div>
     
-    {% for floors in all_units %}
-        <div class="column">
-            <h2>Building 3461</h2>
-            {% for floor, units in floors.items reversed %}
-                <div class="row">
-                    {% for unit in units %}
-                        {% if unit.install %}
-                        <div class="square {{ unit.install.status }} {{ unit.onu }}">
-                            <a href="/?member={{ unit.install.member.id }}">{{ unit.name }}</a>
-                        </div>
-                        {% else %}
-                        <div class="square">
-                            {{ unit.name }}
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% endfor %}
-        </div>
-    {% endfor %}
+    <div class="column">
+        <h2>Building 3461</h2>
+        {% for floor, units in all_units.items reversed %}
+            <div class="row">
+                {% for unit in units %}
+                    {% if unit.install %}
+                    <div class="square {{ unit.install.status }} {{ unit.onu }}">
+                        <a href="/?member={{ unit.install.member.id }}">{{ unit.name }}</a>
+                    </div>
+                    {% else %}
+                    <div class="square">
+                        {{ unit.name }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
 </body>
 </html>
