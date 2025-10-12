@@ -49,16 +49,8 @@
     <h1>Building Dashboard</h1>
     <div class="column">
         <div class="col">
-          {% if user.is_authenticated %}
-            <form action="{% url 'oidc_logout' %}" method="post">
-              {% csrf_token %}  
-              <button type="button" class="btn btn-primary mb-2" onclick="location.href = '/gsg/'>GSG Dashboard</button>
-              <button type="submit" class="btn btn-danger mb-2">Logout</button>
-            </form>
-            <p>Current user: {{ user.email }}</p>
-          {% else %}
-            <button type="button" class="btn btn-success mb-2" onclick="location.href = '{% url 'oidc_authentication_init' %}'">Login</button>
-          {% endif %}
+         <button type="button" class="btn btn-success mb-2" onclick="location.href = '/gsg/'">Grand Street Guild (1932/1933/1934/1936)</button>
+         <button type="button" class="btn btn-success mb-2" onclick="location.href = '/ph/'">Prospect Heights (3461)</button>
         </div>
       </div>
 </body>
