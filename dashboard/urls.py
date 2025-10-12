@@ -9,6 +9,7 @@ urlpatterns = [
     path("gsg/", views_gsg.index, name="gsg_index"),
     path("gsg/reports/", views_gsg.reports, name="gsg_reports"),
     path("gsg/billing/", views_gsg.billing, name="gsg_billing"),
+    path("ph/", views_ph.index, name="ph_index"),
     path('oidc/', include('mozilla_django_oidc.urls')),
     #path("install/<uuid:pk>/", views.install, name="install")
     path('', views.index, name='index'),
