@@ -33,7 +33,7 @@ headers = {
 
 ALLOWED_NETWORK_NUMBER = 3461
 DEVICE_PARENT_ID = "cd815a56-612a-46a9-ae87-b80aab35730b"
-FLOORS = range(1,15)
+FLOORS = range(1,16)
 APARTMENTS = 'ABCDEFGHIJKL'
 
 def normalize_phone_number(phone):
