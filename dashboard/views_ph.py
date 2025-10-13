@@ -33,7 +33,7 @@ headers = {
 
 ALLOWED_NETWORK_NUMBER = 3461
 DEVICE_PARENT_ID = "cd815a56-612a-46a9-ae87-b80aab35730b"
-FLOORS = range(1,15)
+FLOORS = range(1,16)
 APARTMENTS = 'ABCDEFGHIJKL'
 
 def normalize_phone_number(phone):
@@ -288,9 +288,7 @@ def index(request):
                     params['name'] = query
 
                 response = requests.get(API_URL, headers=headers, params=params)
-
                 full_url = response.url
-                print(f"MeshDB URL: {full_url}", file=sys.stderr)
 
                 if response.status_code == 200:
                     members = response.json().get('results', [])
@@ -299,6 +297,7 @@ def index(request):
                         valid = False
                         for install in member['installs']:
                             unit, network_number = get_install_unit_and_network_number(install['id'], headers)
+                            print(f"Queried Result: {unit}, {network_number}", file=sys.stderr)
                             if network_number is 3461:
                                 valid = True
                                 member['unit'] = unit
