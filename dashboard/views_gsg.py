@@ -245,6 +245,7 @@ def fetch_subscription_info(selected_member_info):
 
 def fetch_all_units(onus = False):
     building_map = {}
+    uisp_message = ""
     for building in ALLOWED_NETWORK_NUMBERS:
         response = requests.get(f"{INSTALL_API_URL}/lookup/?network_number={building}&page_size=9999", headers=headers)
         if response.status_code == 200:
@@ -263,21 +264,24 @@ def fetch_all_units(onus = False):
                             if unit["install"]["status"] != "Active":
                                 unit["install"] = install
                             else:
-                                unit["onu"] = "none"
-                                building = 0
-                                if (unit["install"]['node']['network_number'] == 1932):
-                                    building = 410
-                                elif (unit["install"]['node']['network_number'] == 1933):
-                                    building = 460
-                                elif (unit["install"]['node']['network_number'] == 1934):
-                                    building = 131
-                                elif (unit["install"]['node']['network_number'] == 1936):
-                                    building = 1936
-                                if onus:
-                                    for onu in onus:
-                                        if onu['name'].startswith(str(building)):
-                                            if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
-                                                unit["onu"] = onu['status']
+                                if len(onus) == 0:
+                                    uisp_message = f"<br>UISP is down. No ONU statuses will be displayed."
+                                else:
+                                    unit["onu"] = "none"
+                                    building = 0
+                                    if (unit["install"]['node']['network_number'] == 1932):
+                                        building = 410
+                                    elif (unit["install"]['node']['network_number'] == 1933):
+                                        building = 460
+                                    elif (unit["install"]['node']['network_number'] == 1934):
+                                        building = 131
+                                    elif (unit["install"]['node']['network_number'] == 1936):
+                                        building = 1936
+                                    if onus:
+                                        for onu in onus:
+                                            if onu['name'].startswith(str(building)):
+                                                if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
+                                                    unit["onu"] = onu['status']
                     else:
                         unit["install"] = install
             floors = {}
@@ -289,7 +293,10 @@ def fetch_all_units(onus = False):
             building_map[building] = floors
         else:
             building_map[building] = None
-    return building_map
+    if onus:
+        return building_map, uisp_message
+    else:
+        return building_map
 
 def fetch_all_installs(network_numbers):
     installs = []
@@ -309,7 +316,7 @@ def index(request):
     device_info = None
     subscription_info = None
     uisp = fetch_uisp_info()
-    all_units = fetch_all_units(uisp)
+    all_units, uisp_message = fetch_all_units(uisp)
 
     if request.method == 'POST':
         form = LookupForm(request.POST, results=request.session.get('results', []))
@@ -380,11 +387,14 @@ def index(request):
             selected_member_info = response.json()
             selected_member_info['unit'], nn = get_install_unit_and_network_number(selected_member_info['installs'][0]['id'], headers)
             subscription_info = fetch_subscription_info(selected_member_info)
+            for onu in uisp:
+                if onu['name'].endswith("-" + selected_member_info['unit']) or onu['name'].endswith("-0" + selected_member_info['unit']):
+                    device_info = onu
 
     return render(request, 'dashboard/gsg-index.html', {
         'form': form,
         'results': results,
-        'error_message': error_message,
+        'error_message': error_message + uisp_message,
         'selected_member_info': selected_member_info,
         'device_info': device_info,
         'subscription_info': subscription_info,
