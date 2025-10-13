@@ -231,6 +231,7 @@ def fetch_all_units(onus):
                         else:
                             unit["onu"] = "none"
                             for onu in onus:
+                                print(f"Comparing device to record: {onu['name']} vs {install['unit']}", file=sys.stderr)
                                 if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
                                     unit["onu"] = onu['status']
                 else:
