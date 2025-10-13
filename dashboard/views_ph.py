@@ -329,10 +329,17 @@ def index(request):
                 if onu['name'].endswith("-" + selected_member_info['unit']) or onu['name'].endswith("-0" + selected_member_info['unit']):
                     device_info = onu
 
+    if error_message:
+        if uisp_message:
+            error_message += uisp_message
+    else:
+        if uisp_message:
+            error_message = uisp_message
+
     return render(request, 'dashboard/ph-index.html', {
         'form': form,
         'results': results,
-        'error_message': error_message + uisp_message,
+        'error_message': error_message,
         'selected_member_info': selected_member_info,
         'device_info': device_info,
         'subscription_info': subscription_info,
