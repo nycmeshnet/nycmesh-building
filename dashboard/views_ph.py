@@ -150,7 +150,6 @@ def fetch_uisp_info():
 
     full_url = response.url
     print(f"UISP URL: {full_url}", file=sys.stderr)
-    print(f"Response {response.status_code}: {response.text}")
 
     if response.status_code == 200:
         device_data = response.json()
@@ -230,12 +229,13 @@ def fetch_all_units(onus):
                         if unit["install"]["status"] != "Active":
                             unit["install"] = install
                         else:
-                            unit["onu"] = "none"
-                            print(f"ONUs: {onus}", file=sys.stderr)
-                            for onu in onus:
-                                print(f"Comparing device to record: {onu['name']} vs {install['unit']}", file=sys.stderr)
-                                if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
-                                    unit["onu"] = onu['status']
+                            if len(onus) == 0:
+                                error_message = f"UISP is down. No ONU statuses will be displayed."
+                            else:
+                                unit["onu"] = "none"
+                                for onu in onus:
+                                    if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
+                                        unit["onu"] = onu['status']
                 else:
                     unit["install"] = install
         floors = {}
@@ -270,8 +270,7 @@ def index(request):
                 if selected_member_info:
                     subscription_info = fetch_subscription_info(selected_member_info)
                     for onu in onus:
-                        raise Exception(onu['name'], selected_member_info['unit'])
-                        if onu['name'] == selected_member_info['unit']:
+                        if onu['name'].endswith("-" + selected_member_info['unit']) or onu['name'].endswith("-0" + selected_member_info['unit']):
                             device_info = onu
                             break
 
