@@ -212,6 +212,7 @@ def fetch_subscription_info(selected_member_info):
     return subscription_info
 
 def fetch_all_units(onus):
+    uisp_message = ""
     response = requests.get(f"{INSTALL_API_URL}/lookup/?network_number={ALLOWED_NETWORK_NUMBER}&page_size=9999", headers=headers)
     if response.status_code == 200:
         data = response.json()
@@ -230,7 +231,7 @@ def fetch_all_units(onus):
                             unit["install"] = install
                         else:
                             if len(onus) == 0:
-                                error_message = f"UISP is down. No ONU statuses will be displayed."
+                                    uisp_message = f"<br>UISP is down. No ONU statuses will be displayed."
                             else:
                                 unit["onu"] = "none"
                                 for onu in onus:
@@ -244,7 +245,7 @@ def fetch_all_units(onus):
             if not floor in floors:
                 floors[floor] = []
             floors[floor].append(unit)
-        return floors
+        return floors, uisp_message
     else:
         return None
 
@@ -256,7 +257,7 @@ def index(request):
     device_info = None
     subscription_info = None
     onus = fetch_uisp_info()
-    all_units = fetch_all_units(onus)
+    all_units, uisp_message = fetch_all_units(onus)
 
     if request.method == 'POST':
         form = LookupForm(request.POST, results=request.session.get('results', []))
@@ -331,7 +332,7 @@ def index(request):
     return render(request, 'dashboard/ph-index.html', {
         'form': form,
         'results': results,
-        'error_message': error_message,
+        'error_message': error_message + uisp_message,
         'selected_member_info': selected_member_info,
         'device_info': device_info,
         'subscription_info': subscription_info,
