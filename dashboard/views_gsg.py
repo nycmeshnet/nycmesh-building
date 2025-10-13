@@ -264,20 +264,20 @@ def fetch_all_units(onus = False):
                             if unit["install"]["status"] != "Active":
                                 unit["install"] = install
                             else:
-                                if len(onus) == 0:
-                                    uisp_message = f"<br>UISP is down. No ONU statuses will be displayed."
-                                else:
-                                    unit["onu"] = "none"
-                                    building = 0
-                                    if (unit["install"]['node']['network_number'] == 1932):
-                                        building = 410
-                                    elif (unit["install"]['node']['network_number'] == 1933):
-                                        building = 460
-                                    elif (unit["install"]['node']['network_number'] == 1934):
-                                        building = 131
-                                    elif (unit["install"]['node']['network_number'] == 1936):
-                                        building = 1936
-                                    if onus:
+                                if onus:
+                                    if len(onus) == 0:
+                                        uisp_message = f"<br>UISP is down. No ONU statuses will be displayed."
+                                    else:
+                                        unit["onu"] = "none"
+                                        building = 0
+                                        if (unit["install"]['node']['network_number'] == 1932):
+                                            building = 410
+                                        elif (unit["install"]['node']['network_number'] == 1933):
+                                            building = 460
+                                        elif (unit["install"]['node']['network_number'] == 1934):
+                                            building = 131
+                                        elif (unit["install"]['node']['network_number'] == 1936):
+                                            building = 1936
                                         for onu in onus:
                                             if onu['name'].startswith(str(building)):
                                                 if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
