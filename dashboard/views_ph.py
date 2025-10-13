@@ -324,6 +324,9 @@ def index(request):
             selected_member_info = response.json()
             selected_member_info['unit'], nn = get_install_unit_and_network_number(selected_member_info['installs'][0]['id'], headers)
             subscription_info = fetch_subscription_info(selected_member_info)
+            for onu in onus:
+                if onu['name'].endswith("-" + selected_member_info['unit']) or onu['name'].endswith("-0" + selected_member_info['unit']):
+                    device_info = onu
 
     return render(request, 'dashboard/ph-index.html', {
         'form': form,
