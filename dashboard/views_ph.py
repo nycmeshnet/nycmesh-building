@@ -50,23 +50,6 @@ def get_install_unit_and_network_number(install_id, headers):
     else:
         return None, None
 
-def get_device_data(parent_id):
-    print(parent_id, file=sys.stderr)
-    headers = {
-        'accept': 'application/json',
-        'x-auth-token': f'{UISP_API_KEY}'
-    }
-    url = f"{DEVICE_API_BASE_URL}{parent_id}"
-    response = requests.get(url, headers=headers, verify=False)
-
-    full_url = response.url
-    print(f"UISP URL: {full_url}", file=sys.stderr)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
-
 def fetch_stripe_customer(email):
     response = requests.get(
         STRIPE_CUSTOMER_API_URL,
@@ -157,32 +140,45 @@ def fetch_ninja_invoices(client_id):
 
 def fetch_uisp_info():
     devices = []
-    device_data = get_device_data(DEVICE_PARENT_ID)
-    if device_data:
-        for d in device_data:
-            ssid1 = 'N/A'
-            ssid2 = 'N/A'
-            password1 = 'N/A'
-            password2 = 'N/A'
 
-            for iface in d['interfaces']:
-                if iface['identification']['name'] == 'wlan0':
-                    ssid1 = iface['wireless']['ssid']
-                    password1 = iface['wireless']['key']
-                elif iface['identification']['name'] == 'wlan1':
-                    ssid2 = iface['wireless']['ssid']
-                    password2 = iface['wireless']['key']
+    headers = {
+        'accept': 'application/json',
+        'x-auth-token': f'{UISP_API_KEY}'
+    }
+    url = f"{DEVICE_API_BASE_URL}{DEVICE_PARENT_ID}"
+    response = requests.get(url, headers=headers, verify=False)
 
-            device_info = {
-                'name': d['identification']['name'],
-                'status': d['overview']['status'],
-                'signal': d['overview'].get('signal', 'N/A'),
-                'lastSeen': datetime.strptime(
-                    d['overview']['lastSeen'], "%Y-%m-%dT%H:%M:%S.%fZ"
-                ).replace(tzinfo=timezone.utc).astimezone(ZoneInfo("America/New_York")).strftime("%B %d, %Y %I:%M %p"),
-                'model': d['identification'].get('model', 'N/A'),
-            }
-            devices.append(device_info)
+    full_url = response.url
+    print(f"UISP URL: {full_url}", file=sys.stderr)
+
+    if response.status_code == 200:
+        device_data = response.json()
+    
+        if device_data:
+            for d in device_data:
+                ssid1 = 'N/A'
+                ssid2 = 'N/A'
+                password1 = 'N/A'
+                password2 = 'N/A'
+    
+                for iface in d['interfaces']:
+                    if iface['identification']['name'] == 'wlan0':
+                        ssid1 = iface['wireless']['ssid']
+                        password1 = iface['wireless']['key']
+                    elif iface['identification']['name'] == 'wlan1':
+                        ssid2 = iface['wireless']['ssid']
+                        password2 = iface['wireless']['key']
+    
+                device_info = {
+                    'name': d['identification']['name'],
+                    'status': d['overview']['status'],
+                    'signal': d['overview'].get('signal', 'N/A'),
+                    'lastSeen': datetime.strptime(
+                        d['overview']['lastSeen'], "%Y-%m-%dT%H:%M:%S.%fZ"
+                    ).replace(tzinfo=timezone.utc).astimezone(ZoneInfo("America/New_York")).strftime("%B %d, %Y %I:%M %p"),
+                    'model': d['identification'].get('model', 'N/A'),
+                }
+                devices.append(device_info)
     return devices
 
 def fetch_subscription_info(selected_member_info):
