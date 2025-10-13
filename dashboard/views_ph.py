@@ -323,8 +323,8 @@ def index(request):
         response = requests.get(f"{MEMBER_API_URL}/{member_id}", headers=headers)
         if response.status_code == 200:
             selected_member_info = response.json()
-            print("Selected member info/unit", file=sys.stderr)
-            print(selected_member_info['installs'][0]['unit'], file=sys.stderr)
+            print("Selected member info", file=sys.stderr)
+            print(selected_member_info['installs'][0], file=sys.stderr)
             subscription_info = fetch_subscription_info(selected_member_info)
 
     return render(request, 'dashboard/ph-index.html', {
