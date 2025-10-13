@@ -378,6 +378,7 @@ def index(request):
         response = requests.get(f"{MEMBER_API_URL}/{member_id}", headers=headers)
         if response.status_code == 200:
             selected_member_info = response.json()
+            selected_member_info['unit'], nn = get_install_unit_and_network_number(selected_member_info['installs'][0]['id'], headers)
             subscription_info = fetch_subscription_info(selected_member_info)
 
     return render(request, 'dashboard/gsg-index.html', {
