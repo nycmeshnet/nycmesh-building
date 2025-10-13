@@ -150,6 +150,7 @@ def fetch_uisp_info():
 
     full_url = response.url
     print(f"UISP URL: {full_url}", file=sys.stderr)
+    print(f"Response {response.status_code}: {response.text}"
 
     if response.status_code == 200:
         device_data = response.json()
