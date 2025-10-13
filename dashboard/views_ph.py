@@ -297,8 +297,7 @@ def index(request):
                         valid = False
                         for install in member['installs']:
                             unit, network_number = get_install_unit_and_network_number(install['id'], headers)
-                            print(f"Queried Result: {unit}, {network_number}", file=sys.stderr)
-                            if network_number is 3461:
+                            if str(network_number) is str(3461):
                                 valid = True
                                 member['unit'] = unit
                                 break
@@ -324,6 +323,8 @@ def index(request):
         response = requests.get(f"{MEMBER_API_URL}/{member_id}", headers=headers)
         if response.status_code == 200:
             selected_member_info = response.json()
+            print("Selected member info/unit", file=sys.stderr)
+            print(selected_member_info['installs'][0]['unit'], file=sys.stderr)
             subscription_info = fetch_subscription_info(selected_member_info)
 
     return render(request, 'dashboard/ph-index.html', {
