@@ -230,8 +230,9 @@ def fetch_all_units(onus):
                             unit["install"] = install
                         else:
                             unit["onu"] = "none"
-                            if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
-                                unit["onu"] = onu['status']
+                            for onu in onus:
+                                if onu['name'].endswith("-" + install['unit']) or onu['name'].endswith("-0" + install['unit']):
+                                    unit["onu"] = onu['status']
                 else:
                     unit["install"] = install
         floors = {}
